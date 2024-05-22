@@ -56,7 +56,7 @@ const userSchema = new Schema(
 userSchema.pre("save",async function(next){
     //use for password encryption 
     if(!this.isModified("password")) next();//password not changed we do not perform encrption 
-    this.password = bcrypt.hash(this.password,10)
+    this.password = await bcrypt.hash(this.password,10)
     next()
 }) 
 
@@ -80,10 +80,7 @@ userSchema.methods.generateAccessToken = function () {
 userSchema.methods.generateRefreshToken = function () {
     return jwt.sign(
         {
-            _id : this._id,
-            email:this.email,
-            username:this.username,
-            fullname:this.fullname
+            _id : this._id       
         },process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn:process.env.REFRESH_TOKEN_EXPIRY

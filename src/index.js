@@ -7,15 +7,16 @@ import { app } from "./app.js";
 //     path : './.env'
 // })
 // const app = express();
+var PORT = 3000
 connectDB()
 .then(()=>{
-    app.on("error",(error)=>{
-        console.log("ERRR : ",error);
-        throw error
-    })
-    app.listen(process.env.PORT || 3000,()=>{
-        console.log(`server is runnig at port : ${process.env.PORT}`);
-    })
+    // app.on("error",(error)=>{
+    //     console.log("ERRR : ",error);
+    //     throw error
+    // })
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
 })
 .catch((error)=>{
     console.log("MONGO-DB connection error" , error);
