@@ -26,7 +26,7 @@ const userSchema = new Schema(
             trim:true,
             index:true
         },
-        avtar:{
+        avatar:{
             type:String,
             required:true
         },
@@ -41,7 +41,7 @@ const userSchema = new Schema(
         ],
         password:{
             type:String,
-            required:[true,"password is required"]
+            required:[true,"password to joiae"]
         },
         refreshToken:{
             type:String

@@ -27,39 +27,49 @@ const registerUser = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"email is required")
     }
     if(password===""){
-        throw new ApiError(400,"password is required")
+        throw new ApiError(400,"password is rerecgxwerferwquired")
     }
     
     if([fullname,username,email,password].some((field)=> field?.trim()==="")){
         throw new ApiError(400,"All fields are required")
     }
 
-   const existedUserbane =  User.findOne({
-        $or:[{username}]
+//    const existedUserbane = await  User.findOne({
+//         $or:[{username}]
+//     })
+//     if(existedUserbane){
+//         throw new ApiError(409,"User is already existed with this username")
+//     }
+
+//     const existedUseremail = await User.findOne({
+//         $or:[{email}]
+//     })
+//     if(existedUseremail){
+//         throw new ApiError(409,"User is already existed with this email")
+//     }
+
+    const existedUser = await User.findOne({    
+    $or: [{ username }, { email }]
     })
-    if(existedUserbane){
-        throw new ApiError(409,"User is already existed with this username")
+
+    if (existedUser) {
+        throw new ApiError(409, "User with email or username already exists")
     }
 
-    const existedUseremail =  User.findOne({
-        $or:[{email}]
-    })
-    if(existedUseremail){
-        throw new ApiError(409,"User is already existed with this email")
+    const avatarLocalPath = req.files?.avatar[0]?.path;
+   // const coverImageLocalpath = await  req.files?.coverImage[0]?.path;
+
+    let coverImageLocalpath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0 ) {
+        coverImageLocalpath = req.files.coverImage[0].path
     }
-
-    const avatarLocalpath = req.files?.avatar[0]?.path;
-    const coverImageLocalpath = req.files?.avatar[0]?.path;
-
-    if(!avatarLocalpath){
+    if(!avatarLocalPath){
         throw new ApiError(400,"avatar file is required")
     }
 
-    // if(!coverImageLocalpath){
-    //     throw new ApiError(400,"coverImage file is required")
-    // }
+   
 
-    const avatar = await uploadOnCloudinary(avatarLocalpath)
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalpath)
 
     if (!avatar) {
@@ -71,6 +81,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         avatar : avatar.url,
         coverImage : coverImage?.url || "",
         email,
+        password,
         username : username.toLowerCase()
     })
 
@@ -78,7 +89,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     "-password  -refreshToken"
    )
 
-   if (createdUser) {
+   if (!createdUser) {
     throw new ApiError(500,"something went wrong while registering the user")
    }
 
