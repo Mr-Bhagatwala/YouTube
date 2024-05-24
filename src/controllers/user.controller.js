@@ -236,4 +236,120 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
 
 })
 
-export {registerUser,loginUser,logoutUser,refreshAccessToken}
+
+const changeCurrentPassword = asyncHandler(async (req,res)=>{
+    const {oldPassword , newPassword} = req.body
+    // const {oldPassword , newPassword , confirmPassword} = req.body
+
+    // if(!(newPassword === confirmPassword)){
+    //     throw new ApiError(500 , "your newPassword and confirmPassword not matched")
+    // }
+
+    const user = await User.findById(req.user._id)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(200,"invalid old password")
+    }
+
+    user.password = newPassword
+
+    user.save({validateBeforeSave: false })
+
+    return res
+    .status(200)
+    .json(200,{},"password change successfully")
+})
+
+const getCurrentUser = asyncHandler (async (req,res)=>{
+    return res
+    .status(200)
+    .json(200,req.user , "current user fetched successfully")
+})
+
+const updateAcountDetailes = asyncHandler(async (req,res)=>{
+    const {newFullname , newEmail} = req.body
+
+    if(!newFullname || !newEmail){
+        throw new ApiError(500, "please enter the new email or new fullname for update the fullname or email")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set :{
+                fullname : newFullname,
+                email : newEmail
+            }
+        },{ new : true}//here using new operator it can retrun updated data
+    ).select("-password")
+
+
+    return res
+    .status(200)
+    .ApiResponse(200,user,"account detail updated")
+})
+
+const updateUserAvatar  = asyncHandler(async(req,res)=>{
+    const avatarLocalPath = req.file?.path//here we use file instead of files becasue here we want only one file from local storage and while using files we store multiple files 
+
+    if (!avatarLocalPath) {
+        throw new ApiError(200,"avatar file is missing ")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if(!avatar.url){
+        throw new ApiError(200,"error while uploading the avatar on cloudinary  ")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{
+                avatar:avatar
+            }
+        },{new:true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(200,user,"avatar image update successfully")
+})
+
+const updateUserCoverImage  = asyncHandler(async(req,res)=>{
+    const coverImageLocalPath = req.file?.path//here we use file instead of files becasue here we want only one file from local storage and while using files we store multiple files 
+
+    if (!coverImageLocalPath) {
+        throw new ApiError(200,"coverImage file is missing ")
+    }
+
+    const coverImage= await uploadOnCloudinary(coverImageLocalPath)
+
+    if(!coverImage.url){
+        throw new ApiError(200,"error while uploading the coverImage on cloudinary  ")
+    }
+
+    const user = await User.findByIdAndUpdate(req.user?._id,
+        {
+            $set:{
+                coverImage:coverImage
+            }
+        },{new:true}
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(200,user,"cover image update successfully")
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAcountDetailes,
+    updateUserAvatar,
+    updateUserCoverImage
+}
