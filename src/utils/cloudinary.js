@@ -21,7 +21,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 
     } catch (error) {
         fs.unlinkSync(localFilePath) // remove the locally saved temporary file as the upload operation got failed
-        return null;
+        return error;
     }
 }
 
@@ -30,4 +30,18 @@ const uploadOnCloudinary = async (localFilePath) => {
 //   { public_id: "olympic_flag" }, 
 //   function(error, result) {console.log(result); });
 
-export {uploadOnCloudinary}
+
+
+
+const deleteOnCloudinary = async(public_id,resource_type = "image") =>{
+    try {
+        if(!public_id) return null;
+        const result = await cloudinary.uploader.destroy(public_id,{
+            resource_type : `${resource_type}`
+        })
+    } catch (error) {
+        return error
+        console.log("Delete on cloudinary failed ",error);
+    }
+}
+export {uploadOnCloudinary , deleteOnCloudinary}
